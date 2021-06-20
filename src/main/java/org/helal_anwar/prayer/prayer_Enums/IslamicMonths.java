@@ -20,16 +20,21 @@ public enum IslamicMonths {
     /**
      * @author Helal Anwar
      */
-    Al_Muharram,
-    Safar,
-    Rabi_al_Awwal,
-    Rabi_ath_Thani,
-    Jumada_al_Ula,
-    Jumada_ath_Thaniyah,
-    Rajab,
-    Shaban,
-    Ramadan,
-    Shawwal,
-    Du_al_Qa_dah,
-    Du_al_Hijjah;
+    Al_Muharram("Muharram"),
+    Safar("Safar"),
+    Rabi_Al_Awwal("Rabi' al-awwal"),
+    Rabi_Ath_Thani("Rabi' al-thani"),
+    Jumada_Al_Ula("Jumada al-awwal"),
+    Jumada_Ath_Thaniyah("Jumada al-thani"),
+    Rajab("Rajab"),
+    Shaban("Sha'aban"),
+    Ramadan("Ramadan"),
+    Shawwal("Shawwal"),
+    Du_Al_QA_Dah("Dhu al-Qi'dah"),
+    Du_al_Hijjah("Dhu al-Hijjah");
+    private final String monthName;
+    IslamicMonths(String monthName) {
+         this.monthName=monthName;
+    }
+    public String getMonthName(){return monthName;}
 }

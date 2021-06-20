@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021-21 Helal Anwar
+    Copyright (C) 2021-22 Helal Anwar
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.chrono.HijrahDate;
+import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -38,7 +40,6 @@ public class SalahTime extends PrayerTime {
      * @see SalahTime
      * @see HijrahDate
      * @see Time
-     * @see TimeFormat
      * @see Institution
      * @see IslamicMonths
      * @see IslamicWeek
@@ -52,71 +53,107 @@ public class SalahTime extends PrayerTime {
         super();
     }
 
-    public String FajirTime() {
-        return Time.formatTime(getFajirTime(), getTimeFormat());
+    public LocalTime FajirTime() {
+        return Time.formatTime(getFajirTime());
     }
 
-    public String DuhurTime() {
-        return Time.formatTime(getDuhurTime(), getTimeFormat());
+    public LocalTime DuhurTime() {
+        return Time.formatTime(getDuhurTime());
     }
 
 
-    public String AsrTime() {
-        return Time.formatTime(getAsrTime(), getTimeFormat());
+    public LocalTime AsrTime() {
+        return Time.formatTime(getAsrTime());
     }
 
-    public String IshaTime() {
-        if (getInstitution().equals(Institution.Umm_Al_Qura_University_Mecca) && getIslamicMonth().equals(IslamicMonths.Ramadan))
-            return Time.formatTime(getMaghribTime() + (double) 120 / 60, getTimeFormat());
-        return Time.formatTime(getIshaTime(), getTimeFormat());
+    public LocalTime IshaTime() {
+        if (getInstitution().equals(Institution.Umm_Al_Qura_University_Mecca) && getIslamicMonth().equals(IslamicMonths.Ramadan.getMonthName()))
+            return Time.formatTime(getMaghribTime() + (double) 120 / 60);
+        return Time.formatTime(getIshaTime());
     }
 
-    public String MaghribTime() {
-        return Time.formatTime(getMaghribTime(), getTimeFormat());
+    public LocalTime MaghribTime() {
+        return Time.formatTime(getMaghribTime());
     }
 
-    public String JummahTime() {
-        return Time.add(Time.formatTime(getDuhurTime(), TimeFormat.TWENTY_FOUR_HOURS), 1, 0, getTimeFormat());
+    public LocalTime JummahTime() {
+        return Time.add(Time.formatTime(getDuhurTime()), 1, 0);
     }
 
-    public String TahajjudTime() {
-        long[] k = Time.TimeDifference(Time.formatTime(getMaghribTime(), TimeFormat.TWENTY_FOUR_HOURS),
-                Time.formatTime(getFajirTime(), TimeFormat.TWENTY_FOUR_HOURS));
+    public LocalTime TahajjudTime() {
+        long[] k = Time.TimeDifference(Time.formatTime(getMaghribTime()),
+                Time.formatTime(getFajirTime()));
         double x = ((double) Math.abs(k[0])) / 2;
         x = (x - Math.floor(x)) * 60;
         int m = (int) (Math.abs(k[1]) + (int) x);
-        return Time.add(Time.formatTime(getMaghribTime(), TimeFormat.TWENTY_FOUR_HOURS), Math.abs(k[0] / 2),
-                Math.abs(m), getTimeFormat());
+        return Time.add(Time.formatTime(getMaghribTime()), Math.abs(k[0] / 2), Math.abs(m));
     }
 
-    public TreeMap<Prayers, String> allFivePrayers() {
-        if (getDate().getDayOfWeek().equals(DayOfWeek.FRIDAY))
-            return new TreeMap<>(Map.of(Prayers.Fajir, FajirTime(),
-                    Prayers.Duhur, DuhurTime(), Prayers.Jummah, JummahTime(), Prayers.Asr, AsrTime(),
-                    Prayers.Maghrib, MaghribTime(), Prayers.Isha, IshaTime(), Prayers.Tahajjud, TahajjudTime()));
-        else
-            return new TreeMap<>(Map.of(Prayers.Fajir, FajirTime(),
-                    Prayers.Duhur, DuhurTime(), Prayers.Asr, AsrTime(),
-                    Prayers.Maghrib, MaghribTime(), Prayers.Isha, IshaTime(),
-                    Prayers.Tahajjud, TahajjudTime()));
+    public  LinkedHashMap<Prayers,LocalTime> allFivePrayers() {
+        var x=new LinkedHashMap<Prayers,LocalTime>();
+        if (getDate().getDayOfWeek().equals(DayOfWeek.FRIDAY)){
+            x.put(Prayers.Fajir,FajirTime());
+            x.put(Prayers.Duhur,DuhurTime());
+            x.put(Prayers.Jumuah,JummahTime());
+            x.put(Prayers.Asr,AsrTime());
+            x.put(Prayers.Maghrib,MaghribTime());
+            x.put(Prayers.Isha,IshaTime());
+            x.put(Prayers.Tahajjud,TahajjudTime());
+        }
+        else{
+            x.put(Prayers.Fajir,FajirTime());
+            x.put(Prayers.Duhur,DuhurTime());
+            x.put(Prayers.Asr,AsrTime());
+            x.put(Prayers.Maghrib,MaghribTime());
+            x.put(Prayers.Isha,IshaTime());
+            x.put(Prayers.Tahajjud,TahajjudTime());
+        }
+        return x;
+    }
+    public  LinkedHashMap<Prayers,String> allFivePrayers_In12HourFormat() {
+        var x=new LinkedHashMap<Prayers,String>();
+        if (getDate().getDayOfWeek().equals(DayOfWeek.FRIDAY)){
+            x.put(Prayers.Fajir,FajirTime().format(DateTimeFormatter.ofPattern("hh:mm a")));
+            x.put(Prayers.Duhur,DuhurTime().format(DateTimeFormatter.ofPattern("hh:mm a")));
+            x.put(Prayers.Jumuah,JummahTime().format(DateTimeFormatter.ofPattern("hh:mm a")));
+            x.put(Prayers.Asr,AsrTime().format(DateTimeFormatter.ofPattern("hh:mm a")));
+            x.put(Prayers.Maghrib,MaghribTime().format(DateTimeFormatter.ofPattern("hh:mm a")));
+            x.put(Prayers.Isha,IshaTime().format(DateTimeFormatter.ofPattern("hh:mm a")));
+            x.put(Prayers.Tahajjud,TahajjudTime().format(DateTimeFormatter.ofPattern("hh:mm a")));
+        }
+        else{
+            x.put(Prayers.Fajir,FajirTime().format(DateTimeFormatter.ofPattern("hh:mm a")));
+            x.put(Prayers.Duhur,DuhurTime().format(DateTimeFormatter.ofPattern("hh:mm a")));
+            x.put(Prayers.Asr,AsrTime().format(DateTimeFormatter.ofPattern("hh:mm a")));
+            x.put(Prayers.Maghrib,MaghribTime().format(DateTimeFormatter.ofPattern("hh:mm a")));
+            x.put(Prayers.Isha,IshaTime().format(DateTimeFormatter.ofPattern("hh:mm a")));
+            x.put(Prayers.Tahajjud,TahajjudTime().format(DateTimeFormatter.ofPattern("hh:mm a")));
+        }
+        return x;
+    }
+    public TreeMap<Prayers, Double> allFivePrayersHours()
+    {
+        return new TreeMap<>(Map.of(Prayers.Fajir, getFajirTime(),
+                Prayers.Duhur, getDuhurTime(), Prayers.Asr, getAsrTime(),
+                Prayers.Maghrib, getMaghribTime(), Prayers.Isha, getIshaTime()));
     }
 
-    public TreeMap<Prayers, Double> allFivePrayersHours() {
-        return new TreeMap<>(Map.of(Prayers.Fajir, super.getFajirTime(),
-                Prayers.Duhur, super.getDuhurTime(), Prayers.Asr, super.getAsrTime(),
-                Prayers.Maghrib, super.getMaghribTime(), Prayers.Isha, super.getIshaTime()));
-    }
-
-    public TreeMap<LocalDate, Map<Prayers, String>> getPrayerFrom(LocalDate from, LocalDate till) {
-        TreeMap<LocalDate, Map<Prayers, String>> val = new TreeMap<>();
-        while (!from.plusDays(1).equals(till)) {
-            this.setDate(from);
-            val.put(from, this.allFivePrayers());
-            from = from.plusDays(1);
+    public TreeMap<LocalDate, Map<Prayers, LocalTime>> getPrayerFrom(LocalDate from, LocalDate till) {
+        TreeMap<LocalDate, Map<Prayers, LocalTime>> val = new TreeMap<>();
+        for (LocalDate i = from; !i.equals(till); i = i.plusDays(1)) {
+            this.setDate(i);
+            val.put(i, allFivePrayers());
         }
         return val;
     }
-
+    public TreeMap<LocalDate, Map<Prayers, String>> getPrayerFrom_In12HourFormat(LocalDate from, LocalDate till) {
+        TreeMap<LocalDate, Map<Prayers, String>> val = new TreeMap<>();
+        for (LocalDate i = from; !i.equals(till); i = i.plusDays(1)) {
+            this.setDate(i);
+            val.put(i, allFivePrayers_In12HourFormat());
+        }
+        return val;
+    }
     public TreeMap<LocalDate, Map<Prayers, Double>> getPrayerFromInHours(LocalDate from, LocalDate till) {
         TreeMap<LocalDate, Map<Prayers, Double>> val = new TreeMap<>();
         while (!from.plusDays(1).equals(till)) {
@@ -127,25 +164,35 @@ public class SalahTime extends PrayerTime {
         return val;
     }
 
-    public Map<String,Long> getPrayerTimeDifference(Prayers prayer1, Prayers prayer2) {
-        long []diff_time=Time.TimeDifference(getT(prayer1), getT(prayer2));
-        return Map.of("Hours",Math.abs(diff_time[0]),"Minutes",Math.abs(diff_time[1]));
+    public long[] getPrayerTimeDifference(Prayers prayer1, Prayers prayer2) {
+        long[] diff_time = Time.TimeDifference(getT(prayer1), getT(prayer2));
+        return new long[]{Math.abs(diff_time[0]), Math.abs(diff_time[1])};
     }
-
-    public IslamicWeek getIslamicWeekDays() {
-        TreeMap<Integer, IslamicWeek> x = IntStream.range(0, 7).boxed().
+    public long[] getPrayerTimeDifference(Prayers prayer,LocalTime localTime){
+        if ((prayer.equals(Prayers.Fajir)||prayer.equals(Prayers.Tahajjud))&&localTime.format(DateTimeFormatter.ofPattern("hh:mm a")).contains("PM")){
+            long []diff_time1=Time.TimeDifference(localTime,LocalTime.parse("23:59"));
+            long []diff_time2=Time.TimeDifference(LocalTime.parse("00:00"),getT(prayer));
+            int  total_minutes= (int) (diff_time1[1]+diff_time2[1]);
+            int total_hours=(int) (diff_time1[0]+diff_time2[0]);
+            return new long[]{total_hours+total_minutes/60,total_minutes%60+1};
+        }
+        long[] diff_time = Time.TimeDifference(getT(prayer), localTime);
+        return new long[]{Math.abs(diff_time[0]), Math.abs(diff_time[1])};
+    }
+    public String getIslamicWeekDays() {
+        TreeMap<Integer, String> x = IntStream.range(0, 7).boxed().
                 collect(Collectors.toMap(i -> i + 1, i ->
-                        IslamicWeek.values()[i], (a, b) -> b, TreeMap::new));
+                        IslamicWeek.values()[i].getDayName(), (a, b) -> b, TreeMap::new));
         return x.get(getDate().getDayOfWeek().getValue());
     }
 
-    public IslamicMonths getIslamicMonth() {
-        TreeMap<Integer, IslamicMonths> x = IntStream.range(0, 12).boxed().
-                collect(Collectors.toMap(i -> i + 1, i -> IslamicMonths.values()[i], (a, b) -> b, TreeMap::new));
+    public String getIslamicMonth() {
+        TreeMap<Integer, String> x = IntStream.range(0, 12).boxed().
+                collect(Collectors.toMap(i -> i + 1, i -> IslamicMonths.values()[i].getMonthName(), (a, b) -> b, TreeMap::new));
         return x.get(getIslamicMonthValue());
     }
 
-    private String getT(Prayers p1) {
+    private   LocalTime getT(Prayers p1) {
         switch (p1) {
             case Fajir:
                 return FajirTime();
@@ -153,15 +200,91 @@ public class SalahTime extends PrayerTime {
                 return DuhurTime();
             case Asr:
                 return AsrTime();
+            case Jumuah:
+                return JummahTime();
+            case Tahajjud:
+                return TahajjudTime();
             case Maghrib:
                 return MaghribTime();
             case Isha:
                 return IshaTime();
             default:
-                throw new IllegalStateException("Unexpected value: " + p1);
+                throw new IllegalArgumentException();
         }
     }
 
+    public Prayers getCurrentPrayer() {
+        LocalTime localTime=LocalTime.now();
+        if(localTime.compareTo(DuhurTime())<0 && localTime.compareTo(FajirTime())>=0)
+            return Prayers.Fajir;
+        if(localTime.compareTo(AsrTime())<0 && localTime.compareTo(DuhurTime())>=0){
+            if (getDate().getDayOfWeek().equals(DayOfWeek.FRIDAY)){
+                if (localTime.compareTo(JummahTime())<0 && localTime.compareTo(DuhurTime())>=0)
+                    return Prayers.Jumuah;
+                else return Prayers.Duhur;
+            }
+            else return Prayers.Duhur;
+        }
+        if(localTime.compareTo(MaghribTime())<0 && localTime.compareTo(AsrTime())>=0)
+            return Prayers.Asr;
+        if(localTime.compareTo(IshaTime())<0 && localTime.compareTo(MaghribTime())>=0)
+            return Prayers.Maghrib;
+        if(localTime.compareTo(TahajjudTime())<0 && localTime.compareTo(IshaTime())>=0)
+            return Prayers.Isha;
+        if(IshaTime().compareTo(TahajjudTime())>0){
+            if (localTime.compareTo(LocalTime.parse("23:59"))<=0)
+                return Prayers.Isha;
+            if (localTime.compareTo(LocalTime.parse("00:00"))==0)
+                return Prayers.Isha;
+            if (localTime.compareTo(LocalTime.parse("00:00"))>0 &&localTime.compareTo(TahajjudTime())<=0)
+                return Prayers.Isha;
+        }
+        if (IshaTime().compareTo(TahajjudTime())<0){
+            if(localTime.compareTo(LocalTime.parse("23:59"))<0 && localTime.compareTo(TahajjudTime())>=0)
+                return Prayers.Tahajjud;
+            if(localTime.compareTo(FajirTime())<0 && localTime.compareTo(LocalTime.parse("00:00"))>=0)
+                return Prayers.Tahajjud;
+        }
+        if(localTime.compareTo(FajirTime())<0 && localTime.compareTo(TahajjudTime())>=0)
+            return Prayers.Tahajjud;
+        return null;
+    }
+    public Prayers getNextPrayer(){
+        LocalTime localTime=LocalTime.parse(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+        if(localTime.compareTo(DuhurTime())<0 && localTime.compareTo(FajirTime())>=0)
+            return Prayers.Duhur;
+        if(localTime.compareTo(AsrTime())<0 && localTime.compareTo(DuhurTime())>=0){
+            if (getDate().getDayOfWeek().equals(DayOfWeek.FRIDAY)){
+                if (localTime.compareTo(JummahTime())<0 && localTime.compareTo(DuhurTime())>=0)
+                    return Prayers.Jumuah;
+                else return Prayers.Asr;
+            }
+            else return Prayers.Asr;
+        }
+        if(localTime.compareTo(MaghribTime())<0 && localTime.compareTo(AsrTime())>=0)
+            return Prayers.Maghrib;
+        if(localTime.compareTo(IshaTime())<0 && localTime.compareTo(MaghribTime())>=0)
+            return Prayers.Isha;
+        if(localTime.compareTo(TahajjudTime())<0 && localTime.compareTo(IshaTime())>=0)
+            return Prayers.Tahajjud;
+        if(IshaTime().compareTo(TahajjudTime())>0){
+            if (localTime.compareTo(LocalTime.parse("23:59"))<=0 && localTime.format(DateTimeFormatter.ofPattern("hh:mm a")).contains("PM"))
+                return Prayers.Tahajjud;
+            if (localTime.compareTo(LocalTime.parse("00:00"))==0)
+                return Prayers.Tahajjud;
+            if (localTime.compareTo(LocalTime.parse("00:00"))>0 &&localTime.compareTo(TahajjudTime())<=0)
+                return Prayers.Tahajjud;
+        }
+        if (IshaTime().compareTo(TahajjudTime())<0){
+            if(localTime.compareTo(LocalTime.parse("23:59"))<0 && localTime.compareTo(TahajjudTime())>=0)
+                return Prayers.Fajir;
+            if(localTime.compareTo(FajirTime())<0 && localTime.compareTo(LocalTime.parse("00:00"))>=0)
+                return Prayers.Fajir;
+        }
+        if(localTime.compareTo(FajirTime())<0 && localTime.compareTo(TahajjudTime())>=0)
+            return Prayers.Fajir;
+        return null;
+    }
     public HijrahDate getIslamicDateNow() {
         return LocalTime.now().getHour() > Math.floor(getMaghribTime()) ?
                 HijrahDate.from(getDate().plusDays(1)) : HijrahDate.from(getDate());

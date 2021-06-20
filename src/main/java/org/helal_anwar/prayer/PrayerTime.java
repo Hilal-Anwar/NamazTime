@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021-21 Helal Anwar
+    Copyright (C) 2021-22 Helal Anwar
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,14 +30,12 @@ class PrayerTime {
      * @see Prayers
      * @see SalahTime
      * @see Time
-     * @see TimeFormat
      */
     private double longitude;
     private double latitude;
     private double offSetTime;
     private LocalDate date = LocalDate.now();
     private Method method = Method.Standard_Method;
-    private TimeFormat timeFormat = TimeFormat.TWELVE_HOURS;
     private Institution institution;
 
     PrayerTime(double latitude, double longitude, TimeZones timeZones, Institution institution) {
@@ -81,15 +79,6 @@ class PrayerTime {
         a = a < 0 ? (a + 360) : a;
         return a;
     }
-
-    public TimeFormat getTimeFormat() {
-        return timeFormat;
-    }
-
-    public void setTimeFormat(TimeFormat timeFormat) {
-        this.timeFormat = timeFormat;
-    }
-
     public LocalDate getDate() {
         return date;
     }
